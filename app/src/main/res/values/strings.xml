@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">UsercentricsChallenge</string>
+    <string name="label_consent_string">Consent Score</string>
+    <string name="label_show_consent_banner">Show Consent Banner</string>
+</resources>
