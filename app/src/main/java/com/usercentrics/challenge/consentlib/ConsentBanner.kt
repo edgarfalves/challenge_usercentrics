@@ -9,6 +9,9 @@ import com.usercentrics.sdk.UsercentricsConsentUserResponse
 import com.usercentrics.sdk.UsercentricsOptions
 import com.usercentrics.sdk.v2.settings.data.UsercentricsService
 
+/**
+ * Wrapper for [Usercentrics]
+ */
 class ConsentBanner {
     companion object {
         fun initializeUsercentricsSDK(context: Context) {
@@ -131,7 +134,7 @@ class ConsentBanner {
             }
             return newCost
         }
-        
+
 
         private fun ruleChecker(
             dataCollectedList: List<String>, vararg dataCollected: String
