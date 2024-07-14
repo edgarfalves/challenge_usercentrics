@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +24,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.usercentrics.challenge.R
+import com.usercentrics.challenge.consentlib.ConsentBanner
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,14 +35,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ConsentBanner.initializeUsercentricsSDK(context = this)
         setContent {
-            MainScreen()
+            MainScreen(
+                consentScoreState = viewModel.totalConsentScore,
+                onClick = { viewModel.showConsentBanner(context = this) },
+            )
         }
     }
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(consentScoreState: StateFlow<Int>, onClick: () -> Unit) {
+    val consentScore = consentScoreState.collectAsState().value
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -46,39 +55,41 @@ fun MainScreen() {
     ) {
         ConsentLabel(
             modifier = Modifier.align(Alignment.Center),
+            consentScore = consentScore,
         )
         ConsentBannerBtn(
             modifier = Modifier.align(Alignment.BottomCenter),
+            onClick = onClick,
         )
     }
 }
 
 @Composable
-fun ConsentLabel(modifier: Modifier) {
+fun ConsentLabel(modifier: Modifier, consentScore: Int) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CreateText(
-            text = "0",
-            fontSize = 80.sp,
+            text = consentScore.toString(),
+            fontSize = 160.sp,
         )
 
         CreateText(
             text = stringResource(id = R.string.label_consent_string),
-            fontSize = 10.sp,
+            fontSize = 40.sp,
         )
     }
 }
 
 @Composable
-fun ConsentBannerBtn(modifier: Modifier) {
+fun ConsentBannerBtn(modifier: Modifier, onClick: () -> Unit) {
     Button(
         modifier = modifier
             .fillMaxWidth()
             .padding(all = 20.dp),
-        onClick = { },
+        onClick = { onClick() },
     ) {
         CreateText(
             text = stringResource(id = R.string.label_show_consent_banner),
@@ -98,5 +109,5 @@ fun CreateText(text: String, fontSize: TextUnit) {
 @Composable
 @Preview
 fun MainActivityPreview() {
-    MainScreen()
+    MainScreen(consentScoreState = MutableStateFlow(0), onClick = {})
 }
