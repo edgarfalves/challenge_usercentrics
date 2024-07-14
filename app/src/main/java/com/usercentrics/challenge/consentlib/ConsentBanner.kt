@@ -14,11 +14,20 @@ import com.usercentrics.sdk.v2.settings.data.UsercentricsService
  */
 class ConsentBanner {
     companion object {
+        /**
+         * Initializes the SDK. Main calls [Usercentrics.initialize] and configures options.
+         * @param context App Context
+         */
         fun initializeUsercentricsSDK(context: Context) {
             val options = UsercentricsOptions(settingsId = BuildConfig.SETTINGS_ID)
             Usercentrics.initialize(context, options)
         }
 
+        /**
+         * Calls [Usercentrics.isReady]
+         * @param context App Context
+         * @param cb Callback to execute after the consent collection calculations
+         */
         fun showConsentBanner(context: Context, cb: (Int) -> Unit) {
             Usercentrics.isReady({ status ->
                 if (status.shouldCollectConsent) {
@@ -35,6 +44,11 @@ class ConsentBanner {
             })
         }
 
+        /**
+         * Shows the Second Layer to the user. After collecting the response, calls [checkConsent]
+         * @param context App Context
+         * @param cb Callback to execute after the consent collection calculations
+         */
         private fun collectConsent(context: Context, cb: (Int) -> Unit) {
             val banner = UsercentricsBanner(context = context)
             banner.showSecondLayer { userResponse ->
@@ -42,6 +56,12 @@ class ConsentBanner {
             }
         }
 
+        /**
+         * Cross references the services in the [userResponse] with [Usercentrics.instance].getCMPData()
+         * to obtain the data collected list of each one. Calls [calculateCost]
+         * @param userResponse User response for the second layer screen
+         * @param cb Callback to execute after the consent collection calculations
+         */
         private fun checkConsent(
             userResponse: UsercentricsConsentUserResponse?,
             cb: (Int) -> Unit
@@ -57,6 +77,14 @@ class ConsentBanner {
             calculateCost(consentedServicesInfo = consentedServicesInfo, cb = cb)
         }
 
+        /**
+         * Calculates the cost of each service's data collected according the case study table.
+         * Writes in the Logcat each Consented Service along with their cost (TAG: "Consented Service")
+         * and calls [cb] after all the calculations are done.
+         * @param consentedServicesInfo List with Service Info of each service consented
+         * @param cb Callback to execute after the consent collection calculations
+         * @see [checkCost]]
+         */
         private fun calculateCost(
             consentedServicesInfo: List<UsercentricsService>,
             cb: (Int) -> Unit
@@ -76,6 +104,10 @@ class ConsentBanner {
             cb.invoke(totalCost)
         }
 
+        /**
+         * Specifies the cost of each service's data collected according the case study table.
+         * @param collectedData List with Service Info of each service consented
+         */
         private fun checkCost(collectedData: String): Int {
             return when (collectedData.lowercase()) {
                 "configuration of app settings" -> 1
@@ -97,6 +129,12 @@ class ConsentBanner {
             }
         }
 
+        /**
+         * Applies the special rules according to the case study document.
+         * @param cost Current cost
+         * @param dataCollectedList Data collected for a service
+         * @see ruleChecker
+         */
         private fun specialCostRules(cost: Int, dataCollectedList: List<String>): Int {
             var newCost = cost
 
@@ -135,7 +173,10 @@ class ConsentBanner {
             return newCost
         }
 
-
+        /**
+         * Method to help calculate collected data by checking if [dataCollected] exists within the
+         * service's data collected ([dataCollectedList])
+         */
         private fun ruleChecker(
             dataCollectedList: List<String>, vararg dataCollected: String
         ): Boolean {
